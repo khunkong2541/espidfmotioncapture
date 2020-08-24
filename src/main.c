@@ -8,8 +8,8 @@
 
 #define PIN_SDA 21
 #define PIN_CLK 22
-#define I2C_ADDRESS 0x68 // I2C address of MPU6050
-
+#define I2C_ADDRESS1 0x69 // I2C address of MPU6050
+#define I2C_ADDRESS2 0x68 // I2C address of MPU6050
 #define MPU6050_ACCEL_XOUT_H 0x3B
 #define MPU6050_PWR_MGMT_1   0x6B
 
@@ -54,34 +54,57 @@ void app_main(void *ignore) {
 
 	cmd = i2c_cmd_link_create();
 	ESP_ERROR_CHECK(i2c_master_start(cmd));
-	ESP_ERROR_CHECK(i2c_master_write_byte(cmd, (I2C_ADDRESS << 1) | I2C_MASTER_WRITE, 1));
+	ESP_ERROR_CHECK(i2c_master_write_byte(cmd, (I2C_ADDRESS1 << 1) | I2C_MASTER_WRITE, 1));
 	i2c_master_write_byte(cmd, MPU6050_ACCEL_XOUT_H, 1);
 	ESP_ERROR_CHECK(i2c_master_stop(cmd));
-	i2c_master_cmd_begin(I2C_NUM_0, cmd, 1000/portTICK_PERIOD_MS);
+	i2c_master_cmd_begin(I2C_NUM_0, cmd, 10/portTICK_PERIOD_MS);
 	i2c_cmd_link_delete(cmd);
 
 	cmd = i2c_cmd_link_create();
 	ESP_ERROR_CHECK(i2c_master_start(cmd));
-	ESP_ERROR_CHECK(i2c_master_write_byte(cmd, (I2C_ADDRESS << 1) | I2C_MASTER_WRITE, 1));
+	ESP_ERROR_CHECK(i2c_master_write_byte(cmd, (I2C_ADDRESS1 << 1) | I2C_MASTER_WRITE, 1));
 	i2c_master_write_byte(cmd, MPU6050_PWR_MGMT_1, 1);
 	i2c_master_write_byte(cmd, 0, 1);
 	ESP_ERROR_CHECK(i2c_master_stop(cmd));
-	i2c_master_cmd_begin(I2C_NUM_0, cmd, 1000/portTICK_PERIOD_MS);
+	i2c_master_cmd_begin(I2C_NUM_0, cmd, 10/portTICK_PERIOD_MS);
+	i2c_cmd_link_delete(cmd);
+
+//2
+
+	cmd = i2c_cmd_link_create();
+	ESP_ERROR_CHECK(i2c_master_start(cmd));
+	ESP_ERROR_CHECK(i2c_master_write_byte(cmd, (I2C_ADDRESS2 << 1) | I2C_MASTER_WRITE, 1));
+	i2c_master_write_byte(cmd, MPU6050_ACCEL_XOUT_H, 1);
+	ESP_ERROR_CHECK(i2c_master_stop(cmd));
+	i2c_master_cmd_begin(I2C_NUM_0, cmd, 10/portTICK_PERIOD_MS);
+	i2c_cmd_link_delete(cmd);
+
+	cmd = i2c_cmd_link_create();
+	ESP_ERROR_CHECK(i2c_master_start(cmd));
+	ESP_ERROR_CHECK(i2c_master_write_byte(cmd, (I2C_ADDRESS2 << 1) | I2C_MASTER_WRITE, 1));
+	i2c_master_write_byte(cmd, MPU6050_PWR_MGMT_1, 1);
+	i2c_master_write_byte(cmd, 0, 1);
+	ESP_ERROR_CHECK(i2c_master_stop(cmd));
+
+	i2c_master_cmd_begin(I2C_NUM_0, cmd, 10/portTICK_PERIOD_MS);
 	i2c_cmd_link_delete(cmd);
 
 
-	uint8_t data[14];
-
-	short accel_x;
-	short accel_y;
-	short accel_z;
+	uint8_t data1[14],data2[14];
+	uint64_t ti1,ti2;
+	short accel_x1,accel_x2;
+	short accel_y1,accel_y2;
+	short accel_z1,accel_z2;
+	short gyro_x1,gyro_x2;
+	short gyro_y1,gyro_y2;
+	short gyro_z1,gyro_z2;
 
 	while(1) {
 		// Tell the MPU6050 to position the internal register pointer to register
 		// MPU6050_ACCEL_XOUT_H.
 		cmd = i2c_cmd_link_create();
 		ESP_ERROR_CHECK(i2c_master_start(cmd));
-		ESP_ERROR_CHECK(i2c_master_write_byte(cmd, (I2C_ADDRESS << 1) | I2C_MASTER_WRITE, 1));
+		ESP_ERROR_CHECK(i2c_master_write_byte(cmd, (I2C_ADDRESS1 << 1) | I2C_MASTER_WRITE, 1));
 		ESP_ERROR_CHECK(i2c_master_write_byte(cmd, MPU6050_ACCEL_XOUT_H, 1));
 		ESP_ERROR_CHECK(i2c_master_stop(cmd));
 		ESP_ERROR_CHECK(i2c_master_cmd_begin(I2C_NUM_0, cmd, 0/portTICK_PERIOD_MS));
@@ -89,28 +112,80 @@ void app_main(void *ignore) {
 
 		cmd = i2c_cmd_link_create();
 		ESP_ERROR_CHECK(i2c_master_start(cmd));
-		ESP_ERROR_CHECK(i2c_master_write_byte(cmd, (I2C_ADDRESS << 1) | I2C_MASTER_READ, 1));
+		ESP_ERROR_CHECK(i2c_master_write_byte(cmd, (I2C_ADDRESS1 << 1) | I2C_MASTER_READ, 1));
 
-		ESP_ERROR_CHECK(i2c_master_read_byte(cmd, data,   0));
-		ESP_ERROR_CHECK(i2c_master_read_byte(cmd, data+1, 0));
-		ESP_ERROR_CHECK(i2c_master_read_byte(cmd, data+2, 0));
-		ESP_ERROR_CHECK(i2c_master_read_byte(cmd, data+3, 0));
-		ESP_ERROR_CHECK(i2c_master_read_byte(cmd, data+4, 0));
-		ESP_ERROR_CHECK(i2c_master_read_byte(cmd, data+5, 1));
-
+		ESP_ERROR_CHECK(i2c_master_read_byte(cmd, data1,   0));
+		ESP_ERROR_CHECK(i2c_master_read_byte(cmd, data1+1, 0));
+		ESP_ERROR_CHECK(i2c_master_read_byte(cmd, data1+2, 0));
+		ESP_ERROR_CHECK(i2c_master_read_byte(cmd, data1+3, 0));
+		ESP_ERROR_CHECK(i2c_master_read_byte(cmd, data1+4, 0));
+		ESP_ERROR_CHECK(i2c_master_read_byte(cmd, data1+5, 0));
+		ESP_ERROR_CHECK(i2c_master_read_byte(cmd, data1+8, 0));
+		ESP_ERROR_CHECK(i2c_master_read_byte(cmd, data1+9, 0));
+		ESP_ERROR_CHECK(i2c_master_read_byte(cmd, data1+10, 0));
+		ESP_ERROR_CHECK(i2c_master_read_byte(cmd, data1+11, 0));
+		ESP_ERROR_CHECK(i2c_master_read_byte(cmd, data1+12, 0));
+		ESP_ERROR_CHECK(i2c_master_read_byte(cmd, data1+13, 1));
 		//i2c_master_read(cmd, data, sizeof(data), 1);
 		ESP_ERROR_CHECK(i2c_master_stop(cmd));
 		ESP_ERROR_CHECK(i2c_master_cmd_begin(I2C_NUM_0, cmd, 0/portTICK_PERIOD_MS));
 	
-        uint64_t ti = esp_timer_get_time()/1000;
+        ti1 = esp_timer_get_time()/1000;
 
-		accel_x = (data[0] << 8) | data[1];
-		accel_y = (data[2] << 8) | data[3];
-		accel_z = (data[4] << 8) | data[5];
-		printf("%llu accel_x: %d, accel_y: %d, accel_z: %d\n",ti , accel_x, accel_y, accel_z);
 
         i2c_cmd_link_delete(cmd);
 
+
+		// Tell the MPU6050 to position the internal register pointer to register
+		// MPU6050_ACCEL_XOUT_H.
+		cmd = i2c_cmd_link_create();
+		ESP_ERROR_CHECK(i2c_master_start(cmd));
+		ESP_ERROR_CHECK(i2c_master_write_byte(cmd, (I2C_ADDRESS2 << 1) | I2C_MASTER_WRITE, 1));
+		ESP_ERROR_CHECK(i2c_master_write_byte(cmd, MPU6050_ACCEL_XOUT_H, 1));
+		ESP_ERROR_CHECK(i2c_master_stop(cmd));
+		ESP_ERROR_CHECK(i2c_master_cmd_begin(I2C_NUM_0, cmd, 0/portTICK_PERIOD_MS));
+		i2c_cmd_link_delete(cmd);
+
+		cmd = i2c_cmd_link_create();
+		ESP_ERROR_CHECK(i2c_master_start(cmd));
+		ESP_ERROR_CHECK(i2c_master_write_byte(cmd, (I2C_ADDRESS2 << 1) | I2C_MASTER_READ, 1));
+
+		ESP_ERROR_CHECK(i2c_master_read_byte(cmd, data2,   0));
+		ESP_ERROR_CHECK(i2c_master_read_byte(cmd, data2+1, 0));
+		ESP_ERROR_CHECK(i2c_master_read_byte(cmd, data2+2, 0));
+		ESP_ERROR_CHECK(i2c_master_read_byte(cmd, data2+3, 0));
+		ESP_ERROR_CHECK(i2c_master_read_byte(cmd, data2+4, 0));
+		ESP_ERROR_CHECK(i2c_master_read_byte(cmd, data2+5, 0));
+		ESP_ERROR_CHECK(i2c_master_read_byte(cmd, data2+8, 0));
+		ESP_ERROR_CHECK(i2c_master_read_byte(cmd, data2+9, 0));
+		ESP_ERROR_CHECK(i2c_master_read_byte(cmd, data2+10, 0));
+		ESP_ERROR_CHECK(i2c_master_read_byte(cmd, data2+11, 0));
+		ESP_ERROR_CHECK(i2c_master_read_byte(cmd, data2+12, 0));
+		ESP_ERROR_CHECK(i2c_master_read_byte(cmd, data2+13, 1));
+		//i2c_master_read(cmd, data, sizeof(data), 1);
+		ESP_ERROR_CHECK(i2c_master_stop(cmd));
+		ESP_ERROR_CHECK(i2c_master_cmd_begin(I2C_NUM_0, cmd, 0/portTICK_PERIOD_MS));
+	
+        ti2 = esp_timer_get_time()/1000;
+
+
+        i2c_cmd_link_delete(cmd);
+
+		accel_x1 = (data1[0] << 8) | data1[1];
+		accel_y1 = (data1[2] << 8) | data1[3];
+		accel_z1 = (data1[4] << 8) | data1[5];
+		gyro_x1 = (data1[8] << 8) | data1[9];
+		gyro_y1 = (data1[10] << 8) | data1[11];
+		gyro_z1 = (data1[12] << 8) | data1[13];
+
+		accel_x2 = (data2[0] << 8) | data2[1];
+		accel_y2 = (data2[2] << 8) | data2[3];
+		accel_z2 = (data2[4] << 8) | data2[5];
+		gyro_x2 = (data2[8] << 8) | data2[9];
+		gyro_y2 = (data2[10] << 8) | data2[11];
+		gyro_z2 = (data2[12] << 8) | data2[13];
+		
+		printf("1. %llu accel_x: %d, accel_y: %d, accel_z: %d gyro_x: %d, gyro_y: %d, gyro_z: %d\n2. %llu accel_x: %d, accel_y: %d, accel_z: %d gyro_x: %d, gyro_y: %d, gyro_z: %d\n",ti1 , accel_x1, accel_y1, accel_z1, gyro_x1, gyro_y1, gyro_z1,ti2 , accel_x2, accel_y2, accel_z2, gyro_x2, gyro_y2, gyro_z2);
 		
 	}
 
