@@ -120,6 +120,8 @@ void app_main(void *ignore) {
 		ESP_ERROR_CHECK(i2c_master_read_byte(cmd, data1+3, 0));
 		ESP_ERROR_CHECK(i2c_master_read_byte(cmd, data1+4, 0));
 		ESP_ERROR_CHECK(i2c_master_read_byte(cmd, data1+5, 0));
+		ESP_ERROR_CHECK(i2c_master_read_byte(cmd, data1+6, 0));
+		ESP_ERROR_CHECK(i2c_master_read_byte(cmd, data1+7, 0));
 		ESP_ERROR_CHECK(i2c_master_read_byte(cmd, data1+8, 0));
 		ESP_ERROR_CHECK(i2c_master_read_byte(cmd, data1+9, 0));
 		ESP_ERROR_CHECK(i2c_master_read_byte(cmd, data1+10, 0));
@@ -156,6 +158,8 @@ void app_main(void *ignore) {
 		ESP_ERROR_CHECK(i2c_master_read_byte(cmd, data2+3, 0));
 		ESP_ERROR_CHECK(i2c_master_read_byte(cmd, data2+4, 0));
 		ESP_ERROR_CHECK(i2c_master_read_byte(cmd, data2+5, 0));
+		ESP_ERROR_CHECK(i2c_master_read_byte(cmd, data2+6, 0));
+		ESP_ERROR_CHECK(i2c_master_read_byte(cmd, data2+7, 0));
 		ESP_ERROR_CHECK(i2c_master_read_byte(cmd, data2+8, 0));
 		ESP_ERROR_CHECK(i2c_master_read_byte(cmd, data2+9, 0));
 		ESP_ERROR_CHECK(i2c_master_read_byte(cmd, data2+10, 0));
